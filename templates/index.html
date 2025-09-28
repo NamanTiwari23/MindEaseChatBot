@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MindEase</title>
+  <link rel="stylesheet" href="/static/style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: 'Inter', sans-serif;
+      transition: background 0.3s, color 0.3s;
+    }
+    body {
+      margin: 0;
+      background: linear-gradient(to bottom right, #e0f7fa, #f3e5f5);
+      min-height: 100vh;
+      width: 100vw;
+      overflow-x: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    body.dark {
+      background: #1e1e2f;
+      color: #eee;
+    }
+
+    .main-layout {
+      display: flex;
+      width: 90vw;
+      max-width: 1100px;
+      height: 90vh;
+      min-height: 500px;
+      background: transparent;
+      justify-content: center;
+      align-items: stretch;
+      border-radius: 24px;
+      box-shadow: 0 10px 36px rgba(0,0,0,0.07);
+      overflow: hidden;
+    }
+
+    .chat-container {
+      flex: 1 1 60%;
+      max-width: 600px;
+      min-width: 0;
+      background: #ffffff;
+      border-radius: 20px 0 0 20px;
+      box-shadow: none;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      position: relative;
+      z-index: 2;
+    }
+    .dark .chat-container {
+      background: #2b2b3c;
+    }
+    .chat-box {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+    }
+    .user, .bot {
+      margin: 10px 0;
+      padding: 12px 18px;
+      border-radius: 12px;
+      max-width: 85%;
+      position: relative;
+      animation: fadeIn 0.3s ease-in;
+    }
+    .user {
+      background: #d1fae5;
+      align-self: flex-end;
+    }
+    .dark .user {
+      background: #3c6e71;
+    }
+    .bot {
+      background: #e0e7ff;
+      align-self: flex-start;
+    }
+    .dark .bot {
+      background: #4a4e69;
+    }
+    .avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      vertical-align: middle;
+      margin-right: 8px;
+      object-fit: cover;
+    }
+    .message-header {
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+    .timestamp {
+      font-size: 12px;
+      color: #6b7280;
+      margin-top: 4px;
+      text-align: right;
+    }
+    .dark .timestamp {
+      color: #bbb;
+    }
+    .input-area {
+      display: flex;
+      padding: 16px;
+      border-top: 1px solid #e5e7eb;
+      background: #f9fafb;
+    }
+    .dark .input-area {
+      background: #3b3b4f;
+      border-color: #555;
+    }
+    #user-input {
+      flex: 1;
+      padding: 10px 16px;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      outline: none;
+      font-size: 16px;
+    }
+    .dark #user-input {
+      background: #1e1e2f;
+      color: #eee;
+      border-color: #555;
+    }
+    button {
+      margin-left: 10px;
+      padding: 10px 16px;
+      background: #6366f1;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    button:disabled {
+      background: #a5b4fc;
+    }
+    .loading {
+      font-style: italic;
+      color: #6b7280;
+    }
+    .dark .loading {
+      color: #bbb;
+    }
+    .dark-mode-toggle {
+      position: absolute;
+      top: 15px;
+      right: 20px;
+      cursor: pointer;
+      font-size: 18px;
+      color: #555;
+    }
+    .dark .dark-mode-toggle {
+      color: #ccc;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(5px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Modal for name/avatar */
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.6);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 999;
+    }
+    .modal-content {
+      background: #fff;
+      padding: 2em;
+      border-radius: 16px;
+      text-align: center;
+      width: 90%;
+      max-width: 400px;
+    }
+    .modal input {
+      margin: 10px 0;
+      width: 90%;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+    .modal button {
+      margin-top: 10px;
+    }
+
+    .anime-figure {
+      flex: 1 1 40%;
+      background: transparent;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 0;
+      position: relative;
+      z-index: 1;
+      border-radius: 0 20px 20px 0;
+      overflow: hidden;
+    }
+    .anime-figure img {
+      max-width: 95%;
+      max-height: 80vh;
+      object-fit: contain;
+      pointer-events: none;
+      user-select: none;
+      filter: drop-shadow(0 8px 24px rgba(0,0,0,0.10));
+      transition: max-width 0.3s, max-height 0.3s;
+    }
+
+    /* Responsive design for tablets and below */
+    @media (max-width: 900px) {
+      .main-layout {
+        flex-direction: column;
+        align-items: center;
+        height: auto;
+        min-height: 100vh;
+        width: 98vw;
+        max-width: 98vw;
+        border-radius: 0;
+      }
+      .chat-container {
+        border-radius: 20px 20px 0 0;
+        max-width: 100vw;
+        width: 100vw;
+      }
+      .anime-figure {
+        border-radius: 0 0 20px 20px;
+        width: 100vw;
+        justify-content: center;
+        min-height: 180px;
+        padding: 12px 0;
+      }
+      .anime-figure img {
+        max-width: 70vw;
+        max-height: 30vh;
+      }
+    }
+
+    /* Responsive design for mobile screens */
+    @media (max-width: 600px) {
+      .main-layout {
+        flex-direction: column;
+        align-items: stretch;
+        height: auto;
+        min-height: 100vh;
+        width: 100vw;
+        max-width: 100vw;
+        border-radius: 0;
+      }
+      .chat-container {
+        width: 100vw;
+        height: 70vh;
+        max-width: 100vw;
+        border-radius: 0;
+        box-shadow: none;
+      }
+      .anime-figure {
+        width: 100vw;
+        height: 30vh;
+        min-height: 120px;
+        border-radius: 0 0 20px 20px;
+        margin-top: 0;
+        justify-content: center;
+        padding: 8px 0;
+      }
+      .anime-figure img {
+        max-width: 60vw;
+        max-height: 22vh;
+      }
+    }
+  </style>
+</head>
+<body>
+<div class="main-layout">
+  <div class="chat-container">
+    <div class="dark-mode-toggle" onclick="toggleDarkMode()">
+      <i class="fas fa-moon"></i>
+    </div>
+
+    <div class="chat-box" id="chat-box">
+      <div class="bot">
+        <div class="message-header">
+          <img src="/static/bot-avatar.png" alt="MindEase Avatar" class="avatar">
+          <i class="fas fa-robot"></i> <strong>MindEase:</strong>
+        </div>
+        Hello! I'm your mental health companion. How can I support you today?
+        <div class="timestamp" id="time-init"></div>
+      </div>
+    </div>
+
+    <div class="input-area">
+      <input type="text" id="user-input" placeholder="spill it all out friend..." onkeydown="if(event.key==='Enter'){sendMessage()}" autofocus />
+      <button onclick="sendMessage()">Send</button>
+    </div>
+  </div>
+
+  <div class="anime-figure">
+    <!-- Example anime PNG with transparency; replace with your own if desired -->
+  <img src="/static/baymax.png" alt="Anime Character" style="height: 650; width: 700; object-fit: cover;" />
+
+
+  </div>
+</div>
+
+<!-- Modal for name and avatar -->
+<div class="modal" id="nameModal">
+  <div class="modal-content">
+    <h3>Hi friend! What's your name?</h3>
+    <input type="text" id="nameInput" placeholder="Type your name..." />
+    <h4 style="margin-top: 1em;">Upload a profile picture</h4>
+    <input type="file" id="avatarInput" accept="image/*" />
+    <button onclick="setName()">Start Chat</button>
+  </div>
+</div>
+
+<script>
+  let userName = "You";
+  let userAvatar = "";
+
+  function toggleDarkMode() {
+    document.body.classList.toggle("dark");
+    localStorage.setItem("darkMode", document.body.classList.contains("dark") ? "on" : "off");
+  }
+
+  window.onload = () => {
+    document.getElementById("time-init").textContent = getTimeStamp();
+
+    if (localStorage.getItem("darkMode") === "on") {
+      document.body.classList.add("dark");
+    }
+
+    const savedAvatar = localStorage.getItem("avatar");
+    if (savedAvatar) userAvatar = savedAvatar;
+  };
+
+  function setName() {
+    const nameInput = document.getElementById("nameInput").value.trim();
+    const avatarFile = document.getElementById("avatarInput").files[0];
+
+    if (nameInput) userName = nameInput;
+
+    if (avatarFile) {
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        userAvatar = e.target.result;
+        localStorage.setItem("avatar", userAvatar);
+        document.getElementById("nameModal").style.display = "none";
+      };
+      reader.readAsDataURL(avatarFile);
+    } else {
+      document.getElementById("nameModal").style.display = "none";
+    }
+  }
+
+  function getTimeStamp() {
+    const now = new Date();
+    return now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  }
+
+  async function sendMessage() {
+    const input = document.getElementById("user-input");
+    const message = input.value.trim();
+    if (!message) return;
+
+    const chatBox = document.getElementById("chat-box");
+    chatBox.innerHTML += `
+      <div class="user">
+        <div class="message-header">
+          ${userAvatar ? `<img src="${userAvatar}" class="avatar">` : `<i class="fas fa-user"></i>`}
+          <strong>${userName}:</strong>
+        </div>
+        ${message}
+        <div class="timestamp">${getTimeStamp()}</div>
+      </div>`;
+
+    input.value = "";
+    input.disabled = true;
+
+    // Bot thinking
+    chatBox.innerHTML += `<div class="bot loading" id="loading">
+      <div class="message-header"><img src="/static/bot-avatar.png" class="avatar"> <i class="fas fa-robot"></i> <strong>MindEase:</strong></div>
+      MindEase is thinking...
+    </div>`;
+    chatBox.scrollTop = chatBox.scrollHeight;
+
+    try {
+      const response = await fetch("/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message })
+      });
+      const data = await response.json();
+
+      document.getElementById("loading").remove();
+      chatBox.innerHTML += `
+        <div class="bot">
+          <div class="message-header"><img src="/static/bot-avatar.png" class="avatar"> <i class="fas fa-robot"></i> <strong>MindEase:</strong></div>
+          ${data.response}
+          <div class="timestamp">${getTimeStamp()}</div>
+        </div>`;
+    } catch (error) {
+      document.getElementById("loading").remove();
+      chatBox.innerHTML += `
+        <div class="bot">
+          <div class="message-header"><img src="/static/bot-avatar.png" class="avatar"> <i class="fas fa-robot"></i> <strong>MindEase:</strong></div>
+          Sorry, there was an error processing your message.
+          <div class="timestamp">${getTimeStamp()}</div>
+        </div>`;
+    }
+
+    input.disabled = false;
+    input.focus();
+    chatBox.scrollTop = chatBox.scrollHeight;
+  }
+</script>
+</body>
+</html>
